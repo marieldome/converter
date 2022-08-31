@@ -49,21 +49,6 @@ class Application(tk.Frame):
         # self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         # self.bg_label.image = self.back_image
 
-        
-        self.batch = ["First Batch", "Second Batch"]
-        self.firstBatch = ["COSMETIQUE", #3
-                           "ECOSSENTIAL", #4
-                           "FOOD CHOICE", #22
-                           "FOOD INDUSTRIES", #23
-                           "GREEN CROSS", #24
-                           "INTELIGENT", #5
-                           "JS UNITRADE", #2
-                           "MEAD JOHNSON", #8
-                           "MONDELEZ", #9   
-                           "SUYEN"] #10 
-        self.secondBatch = [] #["KSK","BIG E"]
-                            
-
         self.createWidget()
 
     def createWidget(self):        
@@ -632,7 +617,7 @@ class ConvertPSI(Toplevel):
         self.title('Convert Pro-forma Sales Invoice')  
 
         self.win = self
-        self.batch = ["First Batch"] #, "Second Batch"
+        self.batch = ["First Batch", "Second Batch"]
         self.firstBatch = ["COSMETIQUE", #3
                            "ECOSSENTIAL", #4
                            "FOOD CHOICE", #22
@@ -644,7 +629,7 @@ class ConvertPSI(Toplevel):
                            "MONDELEZ", #9   
                            "SUYEN"] #10 
 
-        self.secondBatch = [] #["KSK","BIG E"]   
+        self.secondBatch = ["KSK","BIG E"]   
 
 
         #CONVERT WIDGETS    
