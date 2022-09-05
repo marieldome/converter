@@ -79,8 +79,8 @@ def read_xlsx(file_path):
     price = ""
     amount = ""
 
-    if sheet_obj['A2'].value is not None:
-        si = sheet_obj['A2'].value
+    if sheet_obj['A5'].value is not None:
+        si = sheet_obj['A5'].value
         ws['B5'] = si
         ws['B5'].font = Font(name='Courier New',size= 10, bold= True)
         ws['B2'] = si
@@ -90,7 +90,8 @@ def read_xlsx(file_path):
            newrow = str(i)
            if sheet_obj['A' + newrow].value is not None :       
                 row = sheet_obj['A' + newrow].value
-                if len(row) > 100 :
+                
+                if len(str(row)) > 100 :
                     
                     new_row = ws.max_row + 1
                     itemcode = findItemDetails(row,'itemcode')  
@@ -101,7 +102,8 @@ def read_xlsx(file_path):
                     desc     = findItemDetails(row,'desc')  
                     
 
-                    if itemcode != "" and desc != "" and qty != "" and price != "" and amount != "" and len(itemcode) >= 5  :
+                    if itemcode != "" and desc != "" and not qty.isalpha() and not price.isalpha() and  not amount.isalpha()  and len(itemcode) >= 5  :
+
                         if itemcode != prevItem :
                             ws['A'+ str(new_row)] = itemcode
                             ws['C'+ str(new_row)] = desc
@@ -176,7 +178,7 @@ def read_xlsx(file_path):
 
 def convert_to_xlsx(file_path):
     getfilename = Path(file_path).stem
-    filename = getfilename.replace("_c","")
+    filename =  getfilename.replace("_c","")
     save_to  = FOLDER + filename + ".xlsx"
     
     excel= win32com.client.Dispatch("Excel.Application") 
@@ -192,3 +194,32 @@ def convert_to_xlsx(file_path):
         return 1
     else:
         return 0
+
+
+
+def textfile_to_xlsx(file_path):
+    filename = Path(file_path).stem
+    save_to  = FOLDER + filename + ".xlsx"
+    
+    excel= win32com.client.Dispatch("Excel.Application") 
+    excel.DisplayAlerts = False
+    excel.Visible = False
+    doc  = excel.Workbooks.Open(file_path)
+    doc.SaveAs(save_to, FileFormat = 51)
+    excel.DisplayAlerts = True
+    excel.Quit()
+
+    if path.isfile(save_to):
+        os.remove(file_path)
+
+        result = read_xlsx(save_to)
+        if result == 1:
+            os.remove(save_to)
+            return result
+        else:
+            return 0
+
+    else:
+        return 0
+        # print("0")
+

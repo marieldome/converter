@@ -49,6 +49,7 @@ class Application(tk.Frame):
         # self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         # self.bg_label.image = self.back_image
 
+
         self.createWidget()
 
     def createWidget(self):        
@@ -655,11 +656,12 @@ class ConvertPSI(Toplevel):
         global file_path
         if self.selected_supplier.get() == "MONDELEZ" :
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Excel File", filetypes=(("Excel Files","*.xls*"),("All Files", "*.*")) )
-        elif self.selected_supplier.get() == "BIG E" or self.selected_supplier.get() == "FOOD CHOICE" or self.selected_supplier.get() == "GSMI" or self.selected_supplier.get() == "GREEN CROSS" or  \
-             self.selected_supplier.get() == "MEAD JOHNSON" :
+        elif self.selected_supplier.get() == "BIG E" or self.selected_supplier.get() == "FOOD CHOICE" or self.selected_supplier.get() == "GSMI" or self.selected_supplier.get() == "GREEN CROSS" :
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Excel File", filetypes=(("Excel Files","*.xlsx"),("All Files", "*.*")) )
         elif self.selected_supplier.get() == "FOOD INDUSTRIES" :
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Excel File", filetypes=(("Excel Files","*.xls"),("All Files", "*.*")) )
+        elif  self.selected_supplier.get() == "MEAD JOHNSON" :
+            file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Textfile File", filetypes=(("Text Documnents","*.txt"),("All Files", "*.*")) )
         else:
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select PDF File", filetypes=(("PDF Files","*.pdf"),("All Files", "*.*")) )
 
@@ -713,11 +715,12 @@ class ConvertPSI(Toplevel):
         file_ext = ""
         if self.selected_supplier.get() == "MONDELEZ" :
             file_ext = ['.xlsb','xlsx']
-        elif self.selected_supplier.get() == "BIG E" or self.selected_supplier.get() == "FOOD CHOICE" or self.selected_supplier.get() == "GSMI" or self.selected_supplier.get() == "GREEN CROSS" or \
-             self.selected_supplier.get() == "MEAD JOHNSON" :
+        elif self.selected_supplier.get() == "BIG E" or self.selected_supplier.get() == "FOOD CHOICE" or self.selected_supplier.get() == "GSMI" or self.selected_supplier.get() == "GREEN CROSS" :
             file_ext = ['.xlsx', '.XLSX']
         elif self.selected_supplier.get() == "FOOD INDUSTRIES" : 
             file_ext = ['.xls']
+        elif self.selected_supplier.get() == "MEAD JOHNSON" : 
+            file_ext = ['.txt', '.TXT']
         else:
             file_ext = ['.pdf','.PDF']
 
@@ -791,8 +794,11 @@ class ConvertPSI(Toplevel):
             xlsx = read_xlsx(file_path)
         
         elif supplier == "MEAD JOHNSON":
-            from read_mead_johnson import read_xlsx
-            xlsx = read_xlsx(file_path)
+            # from read_mead_johnson import read_xlsx
+            # xlsx = read_xlsx(file_path)
+            from read_mead_johnson import textfile_to_xlsx
+            xlsx = textfile_to_xlsx(file_path)
+            
 
         ## START SECOND BATCH
         elif supplier == "KSK":
