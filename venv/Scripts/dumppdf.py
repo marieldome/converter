@@ -1,4 +1,4 @@
-#!E:\Python\converter\venv\Scripts\python.exe
+#!G:\converter\venv\Scripts\python.exe
 """Extract pdf structure in XML format"""
 import logging
 import os.path

@@ -630,12 +630,13 @@ class ConvertPSI(Toplevel):
                            "MONDELEZ", #9   
                            "SUYEN"] #10 
 
-        self.secondBatch = ["KSK","BIG E"]   
+        self.secondBatch = ["ALASKA","BIG E","GSMI","KSK"]   
 
 
         #CONVERT WIDGETS    
         self.selected_supplier = tk.StringVar() 
         self.selected_batch    = tk.StringVar()
+        self.sheetnumber       = tk.StringVar()
         self.supplier_label    = tk.Label(self, text='SELECT SUPPLIER', font=('bold', 14))
         self.supplier_label.pack(pady=50)
         self.batch_cbo         = ttk.Combobox(self, textvariable=self.selected_batch, state='readonly', width=15, value=self.batch)
@@ -656,12 +657,14 @@ class ConvertPSI(Toplevel):
         global file_path
         if self.selected_supplier.get() == "MONDELEZ" :
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Excel File", filetypes=(("Excel Files","*.xls*"),("All Files", "*.*")) )
-        elif self.selected_supplier.get() == "BIG E" or self.selected_supplier.get() == "FOOD CHOICE" or self.selected_supplier.get() == "GSMI" or self.selected_supplier.get() == "GREEN CROSS" :
+        elif self.selected_supplier.get() == "BIG E" or self.selected_supplier.get() == "FOOD CHOICE" or self.selected_supplier.get() == "GSMI" or self.selected_supplier.get() == "GREEN CROSS" or \
+            self.selected_supplier.get() == "ALASKA" :           
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Excel File", filetypes=(("Excel Files","*.xlsx"),("All Files", "*.*")) )
         elif self.selected_supplier.get() == "FOOD INDUSTRIES" :
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Excel File", filetypes=(("Excel Files","*.xls"),("All Files", "*.*")) )
         elif  self.selected_supplier.get() == "MEAD JOHNSON" :
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Textfile File", filetypes=(("Text Documnents","*.txt"),("All Files", "*.*")) )
+
         else:
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select PDF File", filetypes=(("PDF Files","*.pdf"),("All Files", "*.*")) )
 
@@ -715,7 +718,8 @@ class ConvertPSI(Toplevel):
         file_ext = ""
         if self.selected_supplier.get() == "MONDELEZ" :
             file_ext = ['.xlsb','xlsx']
-        elif self.selected_supplier.get() == "BIG E" or self.selected_supplier.get() == "FOOD CHOICE" or self.selected_supplier.get() == "GSMI" or self.selected_supplier.get() == "GREEN CROSS" :
+        elif self.selected_supplier.get() == "BIG E" or self.selected_supplier.get() == "FOOD CHOICE" or self.selected_supplier.get() == "GSMI" or self.selected_supplier.get() == "GREEN CROSS" or \
+            self.selected_supplier.get() == "ALASKA" :
             file_ext = ['.xlsx', '.XLSX']
         elif self.selected_supplier.get() == "FOOD INDUSTRIES" : 
             file_ext = ['.xls']
@@ -727,15 +731,17 @@ class ConvertPSI(Toplevel):
         if file_path == "":
                 result = 4                
         else:
+            
             if file_path.endswith(tuple(file_ext)):     
                 result = self.readPdfBySupplier(self.selected_supplier.get(),file_path)    
             else :                
-                result = 3
-            
-        self.supplier_cbo.set("")
-        file_path = ""
-        return result 
+                result = 3          
 
+            self.supplier_cbo.set("")
+            file_path = ""
+            return result 
+
+        
     def readPdfBySupplier(self,supplier,file_path):
         xlsx = 0        
         if supplier == "JS UNITRADE":
@@ -794,8 +800,6 @@ class ConvertPSI(Toplevel):
             xlsx = read_xlsx(file_path)
         
         elif supplier == "MEAD JOHNSON":
-            # from read_mead_johnson import read_xlsx
-            # xlsx = read_xlsx(file_path)
             from read_mead_johnson import textfile_to_xlsx
             xlsx = textfile_to_xlsx(file_path)
             
@@ -808,6 +812,14 @@ class ConvertPSI(Toplevel):
         elif supplier == "BIG E":
             from read_big_e import read_xlsx
             xlsx = read_xlsx(file_path)
+
+        elif supplier == "ALASKA":
+            from read_alaska import read_xlsx
+            xlsx = read_xlsx(file_path)
+
+        elif supplier == "GSMI":
+            from read_gsmi import read_xlsx
+            xlsx = read_xlsx(file_path)
             
         ## END SECOND BATCH
         
@@ -816,10 +828,8 @@ class ConvertPSI(Toplevel):
             # xlsx = read_pdf(file_path)
             pass
 
-        elif supplier == "GSMI":
-            # from read_gsmi import read_xlsx
-            # xlsx = read_xlsx(file_path)
-            pass
+       
+
 
         
             
@@ -829,8 +839,33 @@ class ConvertPSI(Toplevel):
 
         return xlsx
 
+    def inputSheetNumber(self):
+        w   = 350
+        h   = 120 
+        ws  = self.winfo_screenwidth()
+        hs  = self.winfo_screenheight()
+        x   = (ws/2) - (w/2)
+        y   = (hs/2) - (h/2)
+        my_w_child=Toplevel(self.win) 
+        my_w_child.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        my_w_child.resizable(0, 0)
+        my_w_child.iconbitmap("convert-files.ico")
+        my_w_child.title('Convert Pro-forma Sales Invoice')
+        
+        # Open File
+        open_btn = tk.Button(self, text='Choose File', width=29, relief=FLAT, command=lambda:self.chooseSplitFile(self),bg="#0e74e8")
+        open_btn.place(x=150,y=130)
+        # PDF File Path
+        self.pdffile_label = tk.Label(self, text='',  font=('bold', 9))
+        self.pdffile_label.place(x=80,y=160)
 
+        #Input Sheet Number       
+        input_label = tk.Label(my_w_child, text='Input Sheet Number to Convert :',  font=('bold', 12))
+        input_label.place(x=10,y=15)
+        input_sheetno_entry = tk.Entry(my_w_child,textvariable=self.sheetnumber, relief='solid', width=47, highlightcolor= "white")
+        input_sheetno_entry.place(x=10,y=40)
 
+        
 
 window = tk.Tk()
 

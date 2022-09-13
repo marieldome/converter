@@ -2,11 +2,12 @@ import win32com.client
 import os
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
-from openpyxl.workbook.protection import WorkbookProtection
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
 from pathlib import Path
 from os import path
+
+# from openpyxl.workbook.protection import WorkbookProtection
 
 
 USER   = os.path.expanduser('~')
@@ -44,8 +45,21 @@ def read_xlsx(file_path):
         ws['H8'] = "ADDITIONAL AND DEDUCTIONS"
         ws['I8'] = "AMOUNT"
 
+        si_no   = ""
+        si_date = ""
         sold_to = ""
 
+        si_no   = sheet.title
+        if si_no.startswith('For'):
+            ws['B2'] = si_no.split()[-1]
+        else :
+            ws['B2'] = si_no
+        ws['B2'].font = Font(name='Courier New',size= 10, bold= True)      
+
+        si_date = sheet['B2'].value.replace('For the Month of ','')
+        ws['B4'] = datetime.strptime(si_date, '%B %d, %Y').date().strftime('%m/%d/%y')
+        ws['B4'].font = Font(name='Courier New',size= 10, bold= True)
+   
         sold_to = sheet['A1'].value
         ws['B6'] = sold_to
         ws['B6'].font = Font(name='Courier New',size= 10, bold= True)
@@ -104,10 +118,7 @@ def read_xlsx(file_path):
             elif(column_letter == "H"):
                 ws.column_dimensions[column_letter].width = 30
 
-        now = datetime.now()
-        date = now.strftime("%m%d%y")
-        time = now.strftime("%H%M%S")
-        filename = 'GSMI' + '_' + date + time + '_c.xlsx'    
+        filename = si_no +'_c.xlsx'    
         if not path.isdir(FOLDER):
             os.mkdir(FOLDER)
 
@@ -143,6 +154,7 @@ def convert_to_xlsx_again(file_path):
     excel.Quit()
 
     if path.isfile(save_to):
+        os.remove(file_path)
         return 1
     else:
         return 0

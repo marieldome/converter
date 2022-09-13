@@ -2,9 +2,8 @@ import os
 from os import path
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
-USER   = os.path.expanduser('~')
-# FOLDER = USER + "\\Desktop\\JS\\SPLIT\\"
 
+USER   = os.path.expanduser('~')
 
 def pdf_splitter(start,end,filepath,selected_supplier):
     global folder

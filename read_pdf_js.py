@@ -3,12 +3,12 @@ import win32com.client
 import os
 from datetime import datetime
 from openpyxl import Workbook
-from openpyxl.workbook.protection import WorkbookProtection
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
 from pathlib import Path
 from os import path
 from db import Database
+# from openpyxl.workbook.protection import WorkbookProtection
 
 USER   = os.path.expanduser('~')
 FOLDER = USER + "\\Desktop\\JS\\"
