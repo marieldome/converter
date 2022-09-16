@@ -2,6 +2,7 @@ import tkinter as tk
 import threading
 import random
 import os
+import win32com.client
 from tkinter import CENTER, END, FLAT, HORIZONTAL, NO, W, StringVar, Toplevel, filedialog, messagebox,ttk,Canvas
 from PIL import Image, ImageTk
 from pathlib import Path
@@ -113,6 +114,8 @@ class Application(tk.Frame):
         self.clock_label.image = self.clock
         self.currentdate_label = tk.Label(self.master,text='',font=('Segoe UI Light bold',10))
         self.currentdate_label.place(x=10,y=450)
+        self.version_label = tk.Label(self.master,text='version 1.2.4',font=('Segoe UI Light bold',10))
+        self.version_label.place(x=610,y=450)
         self.master.config(menu=menubar)
         self.currentTime()
 
@@ -127,7 +130,7 @@ class Application(tk.Frame):
         if messagebox.askokcancel('Exit','Do yo want to close the application?'):
             try:
                 if submit_thread.is_alive():                
-                    messagebox.showwarning('Exit','Unable to exit application while convertion is ongoing!')
+                    messagebox.showwarning('Exit','Unable to exit application while conversion is ongoing!')
                 else:
                     self.master.destroy()
             except NameError:
@@ -647,12 +650,14 @@ class ConvertPSI(Toplevel):
         self.supplier_cbo.bind('<<ComboboxSelected>>', lambda event:self.openFile(self,event)) 
         # self.supplier_cbo.pack()
         self.note_label    = tk.Label(self, text='NOTE :', font=('bold', 12))
-        self.note_label.place(x=70, y=220)
+        self.note_label.place(x=70, y=320)
         self.note_text_label  = tk.Label(self, text='Please provide item mapping in the CUSTOMER MATERIAL column.', font=('bold', 10))
-        self.note_text_label.place(x=70, y=240)
+        self.note_text_label.place(x=70, y=340)
         # self.note_label.pack(pady=50)
         self.progress = ttk.Progressbar(self, style="green.Horizontal.TProgressbar", orient= HORIZONTAL, length = 300,mode = 'indeterminate',takefocus=True, maximum=100)         
-        
+        self.progress_label = tk.Label(self, text='', font=('', 8))
+        self.progress_label.place(x=110,y=200)
+
     def openFile(self,convertWin,event):
         global file_path
         if self.selected_supplier.get() == "MONDELEZ" :
@@ -683,17 +688,45 @@ class ConvertPSI(Toplevel):
         global submit_thread    
         submit_thread = threading.Thread(target=self.processFile)
         submit_thread.daemon = True
-        submit_thread.start()
+        submit_thread.start()        
         self.runProgress()
         self.after(10, self.checkThread)
 
     def processFile(self):
         global getResult
-        getResult = self.validateFile(file_path)              
+        result = self.quitExcel()
+        if result :
+            self.progress_label.config(text='Converting ....')
+            getResult = self.validateFile(file_path)              
     
     def runProgress(self):  
         self.progress.pack(pady=50)
         self.progress.start()
+
+    def quitExcel(self):
+        import win32com.client
+        proceed = False
+        self.progress_label.config(text='Checking open Excel instance ...')
+        try: 
+            excel = win32com.client.GetActiveObject("Excel.Application")
+            
+        except:
+            excel = ""  
+        
+        if excel != "":
+            import psutil
+
+            self.progress_label.config(text='Closing Excel instance ...')
+            for proc in psutil.process_iter():
+                if proc.name().lower() == "excel.exe":
+                    proc.kill()
+            proceed = True
+        else :
+            proceed = True
+
+        self.progress_label.config(text='')
+        return proceed
+
 
     def checkThread(self):
         if submit_thread.is_alive():
@@ -702,8 +735,9 @@ class ConvertPSI(Toplevel):
         else:
             self.progress.stop()
             self.progress.pack_forget()  
-            # print(getResult)
-            if getResult == 1:
+
+            self.progress_label.config(text='')
+            if getResult == 1:               
                 messagebox.showinfo('Success', 'File is converted successfully!',parent=self.win)
             elif getResult == 2:
                 messagebox.showerror('Error', 'File is not a valid PSI!',parent=self.win)
