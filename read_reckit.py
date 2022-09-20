@@ -9,7 +9,24 @@ from os import path
 # from openpyxl.workbook.protection import WorkbookProtection
 
 USER     = os.path.expanduser('~')
-FOLDER = USER + "\\Desktop\\MEAD JOHNSON\\"
+FOLDER = USER + "\\Desktop\\RECKIT\\"
+
+def findTable(row): #look for items that start with:
+    try:
+        length = 0
+        first = row.split()[0]
+        if first.startswith(tuple(str(i) for i in range(10))):  
+            length = len(row.split())
+            if length >= 8 :                                          
+                return 1                
+            else:
+                return 0
+
+        else:           
+            return 0
+
+    except IndexError :
+        return 0
 
 def findItemDetails(row,word_to_find):
     word = ''
@@ -17,17 +34,26 @@ def findItemDetails(row,word_to_find):
         word = row.split()[0]
 
     elif word_to_find == 'amount':
-        word = row.split()[-1]
+        word = row.split()[-3]
+
+    elif word_to_find == 'vat':
+        word = row.split()[-2]
     
     elif word_to_find == 'price':
         try :
-            word    = row.split()[-4]
+            word    = row.split()[-6]
         except IndexError :
             word = ""
     
     elif word_to_find == 'qty':
         try :
             word      = row.split()[-7]
+        except IndexError :
+            word = ""
+
+    elif word_to_find == 'uom':
+        try :
+            word      = row.split()[-9]
         except IndexError :
             word = ""
     
@@ -72,12 +98,13 @@ def read_xlsx(file_path):
     ws['I8'] = "AMOUNT"
 
     itemcode  = ""
-    customer = ""
     desc  = ""
     qty   = ""
     uom   = ""
     price = ""
     amount = ""
+    docVat = 0.00
+
 
     if sheet_obj['A5'].value is not None:
         si = sheet_obj['A5'].value
@@ -86,23 +113,27 @@ def read_xlsx(file_path):
         ws['B2'] = si
         ws['B2'].font = Font(name='Courier New',size= 10, bold= True)
 
-        for i in range(11,itempos, 1):
+        for i in range(24,itempos, 1):
            newrow = str(i)
            if sheet_obj['A' + newrow].value is not None :       
                 row = sheet_obj['A' + newrow].value
+
+                table = findTable(row)
                 
-                if len(str(row)) > 100 :
+                if table == 1:
                     
                     new_row = ws.max_row + 1
                     itemcode = findItemDetails(row,'itemcode')  
                     qty      = findItemDetails(row,'qty') 
-                    uom      = "CS"
+                    uom      = findItemDetails(row,'uom') 
                     price    = findItemDetails(row,'price')
                     amount   = findItemDetails(row,'amount')
+                    vat      = findItemDetails(row,'vat')
                     desc     = findItemDetails(row,'desc')  
                     
-
-                    if itemcode != "" and desc != "" and not qty.isalpha() and not price.isalpha() and  not amount.isalpha()  and len(itemcode) >= 5  :
+                    
+                 
+                    if itemcode != "" and desc != "" and qty != "" and price != "" and  amount != "" and vat != "" and uom != "":
 
                         if itemcode != prevItem :
                             ws['A'+ str(new_row)] = itemcode
@@ -126,12 +157,18 @@ def read_xlsx(file_path):
                             ws['G'+ str(prevRow)] = float(prevAmt) + float(amount.replace(",",""))
                         
                         prevItem = itemcode
+                        docVat   += float(vat.replace(",",""))
+
+        if docVat != 0.00 : 
+            ws['H9'] = "VAT"
+            ws['I9'] = round(docVat,2)
+            ws['H9'].font = Font(name='Courier New',size= 10, bold= True)
+            ws['I9'].font = Font(name='Courier New',size= 10, bold= True)
 
         sum_qty_row = ws.max_row + 3
         last_row    = ws.max_row
         sum_formula = '= SUM(D9:D' + str(last_row) + ')'
         ws['D' + str(sum_qty_row)] = sum_formula
-
 
         for i in range(1,7,1):
             ws['A' + str(i)].fill = background
@@ -153,9 +190,6 @@ def read_xlsx(file_path):
             elif(column_letter == "H"):
                 ws.column_dimensions[column_letter].width = 30
 
-        now = datetime.now()
-        date = now.strftime("%m%d%y")
-        time = now.strftime("%H%M%S")
         filename =  str(si)  + '_c.xlsx'    
         if not path.isdir(FOLDER):
             os.mkdir(FOLDER)
@@ -200,10 +234,10 @@ def convert_to_xlsx(file_path):
 def textfile_to_xlsx(file_path):
     filename = Path(file_path).stem
     save_to  = FOLDER + filename + ".xlsx"
-
+    
     if not path.isdir(FOLDER):
         os.mkdir(FOLDER)
-    
+
     excel= win32com.client.Dispatch("Excel.Application") 
     excel.DisplayAlerts = False
     excel.Visible = False
@@ -218,7 +252,7 @@ def textfile_to_xlsx(file_path):
         result = read_xlsx(save_to)
         if result == 1:
             os.remove(save_to)
-            return result
+            return 1
         else:
             return 0
 

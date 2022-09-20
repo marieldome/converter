@@ -2,7 +2,6 @@ import tkinter as tk
 import threading
 import random
 import os
-import win32com.client
 from tkinter import CENTER, END, FLAT, HORIZONTAL, NO, W, StringVar, Toplevel, filedialog, messagebox,ttk,Canvas
 from PIL import Image, ImageTk
 from pathlib import Path
@@ -633,7 +632,7 @@ class ConvertPSI(Toplevel):
                            "MONDELEZ", #9   
                            "SUYEN"] #10 
 
-        self.secondBatch = ["ALASKA","BIG E","GSMI","KSK"]   
+        self.secondBatch = ["ALASKA","BIG E","GSMI","KSK","RECKIT"]   
 
 
         #CONVERT WIDGETS    
@@ -667,7 +666,7 @@ class ConvertPSI(Toplevel):
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Excel File", filetypes=(("Excel Files","*.xlsx"),("All Files", "*.*")) )
         elif self.selected_supplier.get() == "FOOD INDUSTRIES" :
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Excel File", filetypes=(("Excel Files","*.xls"),("All Files", "*.*")) )
-        elif  self.selected_supplier.get() == "MEAD JOHNSON" :
+        elif  self.selected_supplier.get() == "MEAD JOHNSON" or self.selected_supplier.get() == "RECKIT":
             file_path = filedialog.askopenfilename(parent=convertWin,initialdir="shell:MyComputerFolder",title="Select Textfile File", filetypes=(("Text Documnents","*.txt"),("All Files", "*.*")) )
 
         else:
@@ -757,7 +756,7 @@ class ConvertPSI(Toplevel):
             file_ext = ['.xlsx', '.XLSX']
         elif self.selected_supplier.get() == "FOOD INDUSTRIES" : 
             file_ext = ['.xls']
-        elif self.selected_supplier.get() == "MEAD JOHNSON" : 
+        elif self.selected_supplier.get() == "MEAD JOHNSON" or self.selected_supplier.get() == "RECKIT" : 
             file_ext = ['.txt', '.TXT']
         else:
             file_ext = ['.pdf','.PDF']
@@ -854,6 +853,10 @@ class ConvertPSI(Toplevel):
         elif supplier == "GSMI":
             from read_gsmi import read_xlsx
             xlsx = read_xlsx(file_path)
+
+        elif supplier == "RECKIT":
+            from read_reckit import textfile_to_xlsx
+            xlsx = textfile_to_xlsx(file_path)
             
         ## END SECOND BATCH
         
